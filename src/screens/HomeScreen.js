@@ -1,11 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { useItemCount } from './itemCountContext';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useFocusEffect } from '@react-navigation/native';
 
 const HomeScreen = () => {
   const [books, setBooks] = useState([]);
-  const { itemCount, setItemCount } = useItemCount();
+  const [itemCount, setItemCount] = useState(0); // Local state for tracking clicks
+
+  // Reset item count when screen is focused (every time the user comes back to this screen)
+  useFocusEffect(
+    React.useCallback(() => {
+      setItemCount(0);  // Reset the count when the screen is focused
+    }, []) // Empty array ensures it's only run when the screen is focused
+  );
 
   useEffect(() => {
     fetch('https://openlibrary.org/subjects/computers.json?limit=10')
@@ -15,7 +22,7 @@ const HomeScreen = () => {
   }, []);
 
   const handleItemClick = () => {
-    setItemCount(itemCount + 1);
+    setItemCount((prevCount) => prevCount + 1);  // Increment the count when a card is clicked
   };
 
   const renderItem = ({ item }) => (
@@ -59,7 +66,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
-    paddingHorizontal: 16,  
+    paddingHorizontal: 16,
   },
   header: {
     fontSize: 24,
