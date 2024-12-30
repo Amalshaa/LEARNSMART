@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import { useItemCount } from './itemCountContext';
+import Icon from 'react-native-vector-icons/MaterialIcons';
 
 const HomeScreen = () => {
-  const [items, setItems] = useState([]);
-  const [itemCount, setItemCount] = useState(0);
+  const [books, setBooks] = useState([]);
+  const { itemCount, setItemCount } = useItemCount();
 
   useEffect(() => {
-    fetch('https://fakestoreapi.com/products')
+    fetch('https://openlibrary.org/subjects/computers.json?limit=10')
       .then((response) => response.json())
-      .then((data) => setItems(data));
+      .then((data) => setBooks(data.works || []))
+      .catch((error) => console.error('Error fetching data:', error));
   }, []);
 
   const handleItemClick = () => {
@@ -16,22 +19,34 @@ const HomeScreen = () => {
   };
 
   const renderItem = ({ item }) => (
-    <View style={styles.card}>
-      <Image source={{ uri: item.image }} style={styles.cardImage} />
-      <Text style={styles.cardTitle}>{item.title}</Text>
-      <Text>{item.description}</Text>
-      <TouchableOpacity style={styles.cardButton} onPress={handleItemClick}>
-        <Text style={styles.cardButtonText}>Click to Count</Text>
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity style={styles.card} onPress={handleItemClick}>
+      <Image
+        source={{
+          uri: `https://covers.openlibrary.org/b/id/${item.cover_id}-M.jpg`,
+        }}
+        style={styles.cardImage}
+      />
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle}>{item.title}</Text>
+        <Text style={styles.cardSubtitle}>
+          Author: {item.authors?.[0]?.name || 'Unknown'}
+        </Text>
+        <View style={styles.statusTag}>
+          <Icon name="check-circle" size={20} color="#4CAF50" style={styles.icon} />
+          <Text style={styles.statusTagText}>Available</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
+      <Text style={styles.header}>IT & AI Books</Text>
       <FlatList
-        data={items}
+        data={books}
         renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item) => item.key}
+        contentContainerStyle={styles.listContainer}
       />
       <TouchableOpacity style={styles.floatingButton}>
         <Text style={styles.floatingButtonText}>Item Click Count: {itemCount}</Text>
@@ -43,47 +58,79 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    backgroundColor: '#f5f5f5',
+    paddingHorizontal: 16,  
+  },
+  header: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginVertical: 20,
+    color: '#333',
+  },
+  listContainer: {
+    paddingBottom: 20,
   },
   card: {
-    padding: 10,
-    marginBottom: 16,
     backgroundColor: '#fff',
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    marginBottom: 15,
+    borderRadius: 12,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    flexDirection: 'row',
+    padding: 12,
   },
   cardImage: {
-    width: '100%',
+    width: 100,
     height: 150,
-    resizeMode: 'contain',
+    borderRadius: 8,
+    marginRight: 12,
+    resizeMode: 'cover',
+  },
+  cardContent: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
   cardTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginTop: 8,
+    marginBottom: 8,
+    color: '#333',
   },
-  cardButton: {
-    marginTop: 10,
-    backgroundColor: '#226b94',
-    padding: 10,
-    borderRadius: 5,
+  cardSubtitle: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 10,
   },
-  cardButtonText: {
-    color: 'white',
-    textAlign: 'center',
+  statusTag: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  icon: {
+    marginRight: 6,
+  },
+  statusTagText: {
+    color: '#4CAF50',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   floatingButton: {
+    backgroundColor: '#FF5722',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 30,
     position: 'absolute',
-    bottom: 30,
+    bottom: 20,
     right: 20,
-    backgroundColor: '#ff5722',
-    padding: 10,
-    borderRadius: 50,
+    elevation: 5,
   },
   floatingButtonText: {
-    color: 'white',
+    color: '#fff',
     fontWeight: 'bold',
+    fontSize: 16,
   },
 });
 

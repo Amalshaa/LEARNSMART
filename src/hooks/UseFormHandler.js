@@ -19,39 +19,29 @@ const useFormHandler = (initialValues) => {
       const value = values[field];
       const rule = rules[field];
 
-      // Required field check
       if (rule.required && !value) {
         isValid = false;
-        newErrors[field] = `${field} is required`;
-        return;
+        newErrors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} is required`;
       }
 
-      // Minimum length check
       if (rule.minLength && value?.length < rule.minLength) {
         isValid = false;
-        newErrors[field] = `${field} must be at least ${rule.minLength} characters`;
-        return;
+        newErrors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} must be at least ${rule.minLength} characters`;
       }
 
-      // Email format check
-      if (rule.email && !/^\S+@\S+\.\S+$/.test(value)) {
+      if (rule.email && value && !/^\S+@\S+\.\S+$/.test(value)) {
         isValid = false;
-        newErrors[field] = `Invalid email format`;
-        return;
+        newErrors[field] = 'Invalid email format';
       }
 
-      // Numeric check for mobile number
-      if (rule.numeric && !/^\d+$/.test(value)) {
+      if (rule.numeric && value && !/^\d+$/.test(value)) {
         isValid = false;
-        newErrors[field] = `${field} must be numeric`;
-        return;
+        newErrors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} must be numeric`;
       }
 
-      // Exact match check (e.g., for password confirmation)
       if (rule.match && value !== values[rule.match]) {
         isValid = false;
-        newErrors[field] = `${field} does not match ${rule.match}`;
-        return;
+        newErrors[field] = `${field.charAt(0).toUpperCase() + field.slice(1)} does not match ${rule.match}`;
       }
     });
 
